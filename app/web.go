@@ -19,14 +19,17 @@ type route struct {
 	handler http.Handler
 }
 
+// RegexpHandler is used for http handler to bind using regular expressions
 type RegexpHandler struct {
 	routes []*route
 }
 
+// Handler binds http handler on RegexpHandler
 func (h *RegexpHandler) Handler(pattern *regexp.Regexp, verb string, handler http.Handler) {
 	h.routes = append(h.routes, &route{pattern, verb, handler})
 }
 
+// HandleFunc binds http handler function on RegexpHandler
 func (h *RegexpHandler) HandleFunc(r string, v string, handler func(http.ResponseWriter, *http.Request)) {
 	re := regexp.MustCompile(r)
 	h.routes = append(h.routes, &route{re, v, http.HandlerFunc(handler)})

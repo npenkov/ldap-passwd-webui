@@ -3,8 +3,11 @@ VER=1.0
 
 .PHONY: all build push
 
-all: build docker push clean
+all: init build docker push clean
 
+init:
+	dep ensure
+	
 build:
 	GOOS=linux go build -o ldap-pass-webui main.go
 
