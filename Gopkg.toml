@@ -24,3 +24,6 @@
 [[constraint]]
   name = "gopkg.in/ldap.v2"
   version = "2.5.1"
+[[constraint]]
+  name = "github.com/dchest/captcha"
+  branch = "master"

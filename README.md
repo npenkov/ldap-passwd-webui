@@ -56,3 +56,4 @@ make
 
  * [Web UI for changing LDAP password - python](https://github.com/jirutka/ldap-passwd-webui)
  * [Gitea](https://github.com/go-gitea/gitea)
+ * [dchest/captcha](https://github.com/dchest/captcha)

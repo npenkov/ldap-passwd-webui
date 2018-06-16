@@ -1,5 +1,5 @@
 REPO=npenkov/docker-ldap-passwd-webui
-VER=1.0
+VER=1.1
 
 .PHONY: all build push
 
