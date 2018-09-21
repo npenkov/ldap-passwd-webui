@@ -12,6 +12,36 @@
   </head>
 
   <body>
+    <script>
+      function setSrcQuery(e, q) {
+        var src = e.src;
+        var p = src.indexOf('?');
+        if (p >= 0) {
+          src = src.substr(0, p);
+        }
+        e.src = src + "?" + q
+      }
+      function playAudio() {
+        var le = document.getElementById("lang");
+        var lang = le.options[le.selectedIndex].value;
+        var e = document.getElementById('audio')
+        setSrcQuery(e, "lang=" + lang)
+        e.style.display = 'block';
+        e.autoplay = 'true';
+        return false;
+      }
+      function changeLang() {
+        var e = document.getElementById('audio')
+        if (e.style.display == 'block') {
+          playAudio();
+        }
+      }
+      function reload() {
+        setSrcQuery(document.getElementById('image'), "reload=" + (new Date()).getTime());
+        setSrcQuery(document.getElementById('audio'), (new Date()).getTime());
+        return false;
+      }
+    </script>
     <main>
       <h1>{{.Title}}</h1>
 
@@ -28,8 +58,16 @@
 
         <label for="confirm-password">Confirm new password</label>
         <input id="confirm-password" name="confirm-password" type="password"
-            pattern="{{.Pattern}}" x-moz-errormessage="{{.PatternInfo}}" required>
+        pattern="{{.Pattern}}" x-moz-errormessage="{{.PatternInfo}}" required>
         <p>{{.PatternInfo}}</p>
+        <p>Type the numbers you see in the picture below:</p>
+        <p>
+          <img id=image src="/captcha/{{.CaptchaId}}.png" alt="Captcha image">
+        </p>
+        <a href="#" onclick="reload()">Reload</a>
+        <input type=hidden name=captchaId value="{{.CaptchaId}}">
+        <br>
+        <input id="captchaSolution" name="captchaSolution" type="text" required>
         <button type="submit">Update password</button>
       </form>
 

@@ -8,6 +8,8 @@ import (
 
 	"html/template"
 
+	"github.com/dchest/captcha"
+
 	"regexp"
 
 	"net/http"
@@ -19,14 +21,17 @@ type route struct {
 	handler http.Handler
 }
 
+// RegexpHandler is used for http handler to bind using regular expressions
 type RegexpHandler struct {
 	routes []*route
 }
 
+// Handler binds http handler on RegexpHandler
 func (h *RegexpHandler) Handler(pattern *regexp.Regexp, verb string, handler http.Handler) {
 	h.routes = append(h.routes, &route{pattern, verb, handler})
 }
 
+// HandleFunc binds http handler function on RegexpHandler
 func (h *RegexpHandler) HandleFunc(r string, v string, handler func(http.ResponseWriter, *http.Request)) {
 	re := regexp.MustCompile(r)
 	h.routes = append(h.routes, &route{re, v, http.HandlerFunc(handler)})
@@ -48,6 +53,7 @@ type pageData struct {
 	PatternInfo string
 	Username    string
 	Alerts      map[string]string
+	CaptchaId   string
 }
 
 // ServeAssets : Serves the static assets
@@ -57,7 +63,7 @@ func ServeAssets(w http.ResponseWriter, req *http.Request) {
 
 // ServeIndex : Serves index page on GET request
 func ServeIndex(w http.ResponseWriter, req *http.Request) {
-	p := &pageData{Title: getTitle(), Pattern: getPattern(), PatternInfo: getPatternInfo()}
+	p := &pageData{Title: getTitle(), CaptchaId: captcha.New(), Pattern: getPattern(), PatternInfo: getPatternInfo()}
 	t, e := template.ParseFiles(path.Join("templates", "index.html"))
 	if e != nil {
 		log.Printf("Error parsing file %v\n", e)
@@ -74,6 +80,8 @@ func ChangePassword(w http.ResponseWriter, req *http.Request) {
 	oldPassword := req.Form["old-password"]
 	newPassword := req.Form["new-password"]
 	confirmPassword := req.Form["confirm-password"]
+	captchaID := req.Form["captchaId"]
+	captchaSolution := req.Form["captchaSolution"]
 
 	alerts := map[string]string{}
 
@@ -100,6 +108,12 @@ func ChangePassword(w http.ResponseWriter, req *http.Request) {
 		alerts["error"] = alerts["error"] + fmt.Sprintf("%s", getPatternInfo())
 	}
 
+	if len(captchaID) < 1 || captchaID[0] == "" ||
+		len(captchaSolution) < 1 || captchaSolution[0] == "" ||
+		!captcha.VerifyString(captchaID[0], captchaSolution[0]) {
+		alerts["error"] = "Wrong captcha."
+	}
+
 	if len(alerts) == 0 {
 		client := NewLDAPClient()
 		if err := client.ModifyPassword(un, oldPassword[0], newPassword[0]); err != nil {
@@ -109,7 +123,7 @@ func ChangePassword(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	p := &pageData{Title: getTitle(), Alerts: alerts, Username: un}
+	p := &pageData{Title: getTitle(), Alerts: alerts, Username: un, CaptchaId: captcha.New()}
 
 	t, e := template.ParseFiles(path.Join("templates", "index.html"))
 	if e != nil {
