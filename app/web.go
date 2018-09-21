@@ -48,10 +48,12 @@ func (h *RegexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type pageData struct {
-	Title     string
-	Username  string
-	Alerts    map[string]string
-	CaptchaId string
+	Title       string
+	Pattern     string
+	PatternInfo string
+	Username    string
+	Alerts      map[string]string
+	CaptchaId   string
 }
 
 // ServeAssets : Serves the static assets
@@ -61,7 +63,7 @@ func ServeAssets(w http.ResponseWriter, req *http.Request) {
 
 // ServeIndex : Serves index page on GET request
 func ServeIndex(w http.ResponseWriter, req *http.Request) {
-	p := &pageData{Title: getTitle(), CaptchaId: captcha.New()}
+	p := &pageData{Title: getTitle(), CaptchaId: captcha.New(), Pattern: getPattern(), PatternInfo: getPatternInfo()}
 	t, e := template.ParseFiles(path.Join("templates", "index.html"))
 	if e != nil {
 		log.Printf("Error parsing file %v\n", e)
@@ -100,6 +102,10 @@ func ChangePassword(w http.ResponseWriter, req *http.Request) {
 
 	if len(confirmPassword) >= 1 && len(newPassword) >= 1 && strings.Compare(newPassword[0], confirmPassword[0]) != 0 {
 		alerts["error"] = "New and confirmation passwords does not match. "
+	}
+
+	if m, _ := regexp.MatchString(getPattern(), newPassword[0]); !m {
+		alerts["error"] = alerts["error"] + fmt.Sprintf("%s", getPatternInfo())
 	}
 
 	if len(captchaID) < 1 || captchaID[0] == "" ||

@@ -38,6 +38,8 @@ docker run -d -p 8080:8080 --name ldap-passwd-webui \
     -e LPW_SSL_SKIP_VERIFY="true" \
     -e LPW_USER_DN="uid=%s,ou=people,dc=example,dc=org" \
     -e LPW_USER_BASE="ou=people,dc=example,dc=org" \
+    -e LPW_PATTERN='.{8,}' \
+    -e LPW_PATTERN_INFO="Password must be at least 8 characters long." \
     npenkov/docker-ldap-passwd-webui:latest
 ```
 
