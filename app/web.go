@@ -123,7 +123,7 @@ func ChangePassword(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	p := &pageData{Title: getTitle(), Alerts: alerts, Username: un, CaptchaId: captcha.New()}
+	p := &pageData{Title: getTitle(), Alerts: alerts, Username: un, CaptchaId: captcha.New(), Pattern: getPattern(), PatternInfo: getPatternInfo()}
 
 	t, e := template.ParseFiles(path.Join("templates", "index.html"))
 	if e != nil {
